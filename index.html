@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="數字尋寶">
+    
+    <link rel="apple-touch-icon" href="icon.jpg"> 
+
+    <title>數字尋寶 - 離線 App 版</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            --header-bg: #ffffff;
+            --control-bg: #f1f5f9;
+            --btn-main: #3b82f6; 
+            --btn-correct: #475569; 
+        }
+        * { box-sizing: border-box; touch-action: manipulation; -webkit-user-select: none; }
+        body, html { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; font-family: "Microsoft JhengHei", system-ui, sans-serif; background: var(--bg-gradient); }
+        header { height: 12vh; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; background: var(--header-bg); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .title { font-size: 5vh; font-weight: 900; color: #0f172a; }
+        #timer-box { text-align: right; min-width: 200px; }
+        #timer { font-size: 8vh; font-weight: bold; color: #ef4444; font-family: 'Courier New', monospace; display: block; line-height: 1; }
+        #best-record { font-size: 2.2vh; color: #64748b; font-weight: bold; margin-top: 5px; }
+        #main-area { height: 73vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        #game-board { display: grid; gap: 12px; width: 100%; max-width: 70vh; }
+        .number-btn { aspect-ratio: 1 / 1; width: 100%; border: none; border-radius: 20px; font-size: 8vh; font-weight: bold; color: white; cursor: pointer; transition: transform 0.1s, background-color 0.3s; box-shadow: 0 8px 0 rgba(0,0,0,0.15); display: flex; justify-content: center; align-items: center; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .playing .number-btn:active { transform: translateY(4px); box-shadow: 0 4px 0 rgba(0,0,0,0.1); }
+        .number-btn.correct { background-color: var(--btn-correct) !important; color: #cbd5e1 !important; box-shadow: none !important; transform: translateY(8px) !important; text-shadow: none !important; opacity: 0.7; }
+        .controls { height: 15vh; display: flex; justify-content: center; align-items: center; gap: 20px; background: var(--control-bg); border-top: 2px solid #e2e8f0; }
+        .control-btn { padding: 1.5vh 6vh; font-size: 4vh; font-weight: bold; border-radius: 100px; border: none; color: white; cursor: pointer; box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+        #start-btn { background: #10b981; }
+        #stop-btn { background: #ef4444; }
+        #settings-btn { background: #64748b; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); z-index: 1000; flex-direction: column; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 30px; border-radius: 40px; width: 90%; max-width: 550px; }
+        #victory-modal { color: white; text-align: center; }
+        .trophy { font-size: 18vh; animation: bounce 1s infinite; margin-bottom: 10px; }
+        .score-display { font-size: 12vh; color: #fbbf24; font-weight: 900; margin: 10px 0; font-family: 'Courier New', monospace; }
+        .new-record-tag { background: #ef4444; color: white; padding: 5px 20px; border-radius: 10px; font-size: 3vh; display: none; margin-bottom: 15px; }
+        .setting-group { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .setting-title { font-size: 3vh; font-weight: bold; margin-bottom: 10px; text-align: center; color: #334155; }
+        .option-flex { display: flex; gap: 10px; justify-content: center; }
+        .level-btn, .mode-btn { padding: 12px; font-size: 2.5vh; border-radius: 15px; border: 2px solid #ccc; cursor: pointer; background: white; font-weight: bold; }
+        .selected { background: #3b82f6 !important; color: white !important; border-color: #2563eb !important; }
+        .danger-btn { background: #fee2e2; color: #dc2626; border: 2px solid #fca5a5; padding: 10px; width: 100%; border-radius: 15px; font-size: 2.5vh; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="title">數字尋寶</div>
+        <div id="timer-box">
+            <div id="timer">0</div>
+            <div id="best-record">最佳分數: --</div>
+        </div>
+    </header>
+    <div id="main-area"><div id="game-board"></div></div>
+    <div class="controls">
+        <button id="start-btn" class="control-btn" onclick="startGame()">開始</button>
+        <button id="stop-btn" class="control-btn" onclick="stopGame()">停止</button>
+        <button id="settings-btn" class="control-btn" onclick="toggleModal('settings-modal', true)">設定</button>
+    </div>
+    <div id="victory-modal" class="modal">
+        <div class="trophy">🏆</div>
+        <h1 style="font-size: 5vh; margin: 0;">完成了，您很棒！</h1>
+        <div id="new-record" class="new-record-tag">恭喜破紀錄！</div>
+        <div class="score-display" id="final-score">0</div>
+        <button class="control-btn" style="background:#f59e0b; font-size: 4vh; margin-top: 20px;" onclick="resetGameUI(); toggleModal('victory-modal', false)">再玩一次</button>
+    </div>
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="setting-group">
+                <div class="setting-title">選擇遊戲大小</div>
+                <div class="option-flex">
+                    <button id="size-3" class="level-btn selected" onclick="updateSize(3)">3 X 3</button>
+                    <button id="size-4" class="level-btn" onclick="updateSize(4)">4 X 4</button>
+                    <button id="size-5" class="level-btn" onclick="updateSize(5)">5 X 5</button>
+                </div>
+            </div>
+            <div class="setting-group">
+                <div class="setting-title">按鍵色彩模式</div>
+                <div class="option-flex">
+                    <button id="mode-single" class="mode-btn selected" onclick="updateMode('single')">單一顏色</button>
+                    <button id="mode-mix" class="mode-btn" onclick="updateMode('mix')">混合繽紛</button>
+                </div>
+            </div>
+            <div class="setting-group">
+                <button class="danger-btn" onclick="clearBestRecord()">🗑️ 清除最佳分數</button>
+            </div>
+            <button class="control-btn" style="background:#10b981; width:100%;" onclick="toggleModal('settings-modal', false)">完成設定</button>
+        </div>
+    </div>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW註冊失敗', err));
+            });
+        }
+        let gridSize = 3, colorMode = 'single', nextNumber = 1, timerInterval = null, startTime = 0, elapsedTime = 0, isGameRunning = false;
+        const themeColors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#f43f5e', '#06b6d4', '#ec4899'];
+        const board = document.getElementById('game-board'), timerDisplay = document.getElementById('timer'), bestDisplay = document.getElementById('best-record');
+        let records = JSON.parse(localStorage.getItem('num_treasure_records_v4')) || {3: null, 4: null, 5: null};
+        function speak(text) { window.speechSynthesis.cancel(); const msg = new SpeechSynthesisUtterance(text); msg.lang = 'zh-TW'; msg.rate = 0.8; window.speechSynthesis.speak(msg); }
+        function formatScoreInt(ms) { return Math.floor(ms / 10); }
+        function toggleModal(id, show) { if (show && isGameRunning) stopGame(); document.getElementById(id).style.display = show ? 'flex' : 'none'; }
+        function updateSize(size) { gridSize = size; ['size-3', 'size-4', 'size-5'].forEach(id => document.getElementById(id).classList.toggle('selected', id === 'size-' + size)); updateBestDisplay(); resetGameUI(); }
+        function updateMode(mode) { colorMode = mode; document.getElementById('mode-single').classList.toggle('selected', mode === 'single'); document.getElementById('mode-mix').classList.toggle('selected', mode === 'mix'); resetGameUI(); }
+        function clearBestRecord() { if (confirm("確定要清除分數嗎？")) { records[gridSize] = null; localStorage.setItem('num_treasure_records_v4', JSON.stringify(records)); updateBestDisplay(); speak("紀錄已清除"); } }
+        function updateBestDisplay() { const b = records[gridSize]; bestDisplay.innerText = b ? `最佳分數: ${formatScoreInt(b)}` : "最佳分數: --"; }
+        function resetGameUI() { stopTimer(); elapsedTime = 0; nextNumber = 1; isGameRunning = false; board.classList.remove('playing'); timerDisplay.innerText = "0"; board.innerHTML = ""; if (colorMode === 'single') { const randomColor = themeColors[Math.floor(Math.random() * themeColors.length)]; document.documentElement.style.setProperty('--btn-main', randomColor); } createGrid(); }
+        function createGrid() { board.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`; const total = gridSize * gridSize; let numbers = Array.from({length: total}, (_, i) => i + 1).sort(() => Math.random() - 0.5); numbers.forEach(num => { const btn = document.createElement('button'); btn.className = 'number-btn'; btn.innerText = num; btn.style.backgroundColor = (colorMode === 'mix') ? themeColors[num % themeColors.length] : 'var(--btn-main)'; btn.onclick = () => handleNumberClick(btn, num); board.appendChild(btn); }); }
+        function startGame() { if (!isGameRunning) { if (nextNumber === 1) resetGameUI(); isGameRunning = true; board.classList.add('playing'); if (nextNumber === 1) speak("現在開始"); startTime = Date.now() - elapsedTime; timerInterval = setInterval(() => { elapsedTime = Date.now() - startTime; timerDisplay.innerText = formatScoreInt(elapsedTime); }, 10); } }
+        function stopGame() { stopTimer(); isGameRunning = false; board.classList.remove('playing'); }
+        function stopTimer() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
+        function handleNumberClick(btn, num) { if (!isGameRunning) return; if (num === nextNumber) { btn.classList.add('correct'); btn.onclick = null; nextNumber++; if (nextNumber > gridSize * gridSize) endGame(); } }
+        function endGame() { stopTimer(); isGameRunning = false; board.classList.remove('playing'); const finalScore = formatScoreInt(elapsedTime); document.getElementById('final-score').innerText = finalScore; let isNewRecord = false; if (!records[gridSize] || elapsedTime < records[gridSize]) { records[gridSize] = elapsedTime; localStorage.setItem('num_treasure_records_v4', JSON.stringify(records)); isNewRecord = true; updateBestDisplay(); } document.getElementById('new-record').style.display = isNewRecord ? 'inline-block' : 'none'; toggleModal('victory-modal', true); speak(isNewRecord ? "太厲害了，您破紀錄了，完成了您很棒！" : "完成了，您很棒！"); }
+        updateBestDisplay(); createGrid();
+    </script>
+</body>
+</html>
