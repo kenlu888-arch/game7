@@ -1,7 +1,8 @@
-const CACHE_NAME = 'number-treasure-vFINAL';
+const CACHE_NAME = 'number-treasure-v1';
 const ASSETS = [
     './',
     './index.html',
+    './manifest.json',
     './icon.jpg' 
 ];
 
