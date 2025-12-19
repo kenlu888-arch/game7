@@ -30,11 +30,11 @@
 
         #main-area { 
             flex: 1; display: flex; justify-content: center; align-items: center; 
-            padding: 5px; /* 縮小邊距讓畫面更大 */
+            padding: 5px; 
         }
         #game-board { 
             display: grid; gap: 8px; width: 100%; 
-            max-width: 95vw; max-height: 95%; /* 盡可能充滿螢幕 */
+            max-width: 95vw; max-height: 95%; 
         }
         .number-btn { 
             aspect-ratio: 1 / 1; border: none; border-radius: 12px; 
@@ -101,7 +101,7 @@
         function speak(text) {
             const msg = new SpeechSynthesisUtterance(text);
             msg.lang = 'zh-TW';
-            msg.rate = 1.2; // 稍微加快語速，避免堆疊
+            msg.rate = 1.2;
             window.speechSynthesis.speak(msg);
         }
 
@@ -122,7 +122,6 @@
             board.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
             updateBest();
             
-            // 更新按鈕狀態
             [3,4,5].forEach(i => document.getElementById('sz'+i).className = (gridSize==i?'opt-btn active':'opt-btn'));
             document.getElementById('m1').className = (colorMode=='single'?'opt-btn active':'opt-btn');
             document.getElementById('m2').className = (colorMode=='mix'?'opt-btn active':'opt-btn');
@@ -141,7 +140,7 @@
         function handlePress(btn, n) {
             if (!isGameRunning || btn.classList.contains('correct')) return;
             if (n === nextNumber) {
-                speak(n.toString()); // 點擊正確立即報數
+                // 這裡已移除 speak(n.toString()) 語音播報
                 btn.classList.add('correct');
                 nextNumber++;
                 if (nextNumber > gridSize * gridSize) endGame();
@@ -151,7 +150,7 @@
         function startGame() {
             resetGame();
             isGameRunning = true;
-            speak("開始"); // 僅播放開始
+            speak("開始");
             startTime = Date.now();
             timerInterval = setInterval(() => {
                 document.getElementById('timer').innerText = Math.floor((Date.now() - startTime) / 10);
