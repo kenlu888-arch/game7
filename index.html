@@ -17,82 +17,65 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
         body, html { 
             width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; 
-            display: flex; flex-direction: column; font-family: system-ui, -apple-system, sans-serif; 
+            display: flex; flex-direction: column; font-family: system-ui, sans-serif; 
             background: var(--bg-gradient); 
         }
         
-        /* 頂部佈局調整 */
+        /* 頂部 Header：固定高度以利計算下方空間 */
         header { 
-            flex: 0 0 auto; 
+            flex: 0 0 15vh; /* 固定約 15% 螢幕高度 */
             background: white; 
             border-bottom: 2px solid #e2e8f0;
-            padding: calc(15px + env(safe-area-inset-top)) 15px 15px 15px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            padding: calc(10px + env(safe-area-inset-top)) 15px 10px 15px;
+            display: flex; align-items: center; justify-content: space-between;
         }
 
-        /* 放大標題與紀錄 */
-        .side-info { flex: 0 0 25%; }
-        .title { font-size: 2.8vh; font-weight: 900; color: #1e293b; white-space: nowrap; margin-bottom: 4px; }
-        #best-record { font-size: 1.6vh; color: #64748b; font-weight: bold; }
+        .side-info { flex: 0 0 28%; }
+        .title { font-size: 3.2vh; font-weight: 900; color: #1e293b; white-space: nowrap; margin-bottom: 2px; }
+        #best-record { font-size: 1.8vh; color: #64748b; font-weight: bold; }
 
-        /* 縮小控制按鈕 */
         .btn-section { 
-            flex: 1; 
-            display: flex; 
-            gap: 10px; 
-            justify-content: center;
-            padding: 0 15px;
+            flex: 1; display: flex; flex-direction: column; gap: 5px; align-items: center;
         }
         .control-btn { 
-            height: 5.5vh; /* 縮小高度 */
-            width: 85px;   /* 限制寬度 */
-            font-size: 2.2vh; 
-            border-radius: 12px; border: none; 
-            color: white; font-weight: bold; 
-            box-shadow: 0 4px 0px #1e40af; 
+            height: 4.5vh; width: 80px; font-size: 1.8vh; border-radius: 10px; border: none; 
+            color: white; font-weight: bold; box-shadow: 0 3px 0px #1e40af; 
             display: flex; justify-content: center; align-items: center;
         }
         .control-btn:active { transform: translateY(2px); box-shadow: 0 1px 0px #1e40af; }
 
-        /* 放大計時器 */
-        .timer-section { 
-            flex: 0 0 25%; 
-            text-align: right; 
-        }
-        #timer { font-size: 5.5vh; font-weight: bold; color: #ef4444; font-family: 'Courier New', monospace; line-height: 1; }
+        .timer-section { flex: 0 0 28%; text-align: right; }
+        #timer { font-size: 6vh; font-weight: bold; color: #ef4444; font-family: 'Courier New', monospace; line-height: 1; }
 
-        /* 遊戲區域保持最大化 */
+        /* 遊戲區域：使用剩餘的 85vh 空間 */
         #main-area { 
-            flex: 1; 
-            display: flex; justify-content: center; align-items: center; 
-            padding: 15px; overflow: hidden;
+            flex: 1; display: flex; justify-content: center; align-items: center; 
+            padding: 10px; overflow: hidden;
         }
         #game-board { 
-            display: grid; 
-            gap: 10px;
+            display: grid; gap: 10px;
             width: 100%; 
-            max-width: 600px;
-            max-height: 100%; 
+            height: 100%; /* 撐滿 main-area */
+            max-width: 80vh; /* 確保寬度不超過高度空間，維持正方形感 */
+            max-height: 80vw; /* 確保高度不超過寬度空間 */
             margin: auto;
         }
 
         .number-btn { 
-            aspect-ratio: 1 / 1; 
-            border: none; border-radius: 16px; 
+            aspect-ratio: 1 / 1; border: none; border-radius: 16px; 
             font-weight: 900; color: white; 
             box-shadow: 0 6px 0 rgba(0,0,0,0.2); 
             display: flex; justify-content: center; align-items: center; 
             touch-action: none;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            /* 字體大小將在 JS 中動態計算至極限 */
         }
         .number-btn.correct { 
             background-color: var(--btn-correct) !important; 
             transform: translateY(6px); box-shadow: none; opacity: 0.2; 
         }
 
-        /* 設定視窗保持美觀 */
+        /* 設定彈窗 */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; flex-direction: column; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 25px; border-radius: 24px; width: 90%; max-width: 400px; }
         .setting-item { margin-bottom: 25px; text-align: center; }
@@ -107,20 +90,14 @@
             <div class="title">數字尋寶</div>
             <div id="best-record">最佳: --</div>
         </div>
-        
         <div class="btn-section">
             <button class="control-btn" style="background:#10b981" onclick="startGame()">開始</button>
             <button class="control-btn" style="background:#64748b" onclick="toggleModal('settings-modal', true)">設定</button>
         </div>
-
-        <div class="timer-section">
-            <div id="timer">0</div>
-        </div>
+        <div class="timer-section"><div id="timer">0</div></div>
     </header>
 
-    <div id="main-area">
-        <div id="game-board"></div>
-    </div>
+    <div id="main-area"><div id="game-board"></div></div>
 
     <div id="settings-modal" class="modal">
         <div class="modal-content">
@@ -155,12 +132,12 @@
 
         function updateBest() {
             const b = records[gridSize];
-            document.getElementById('best-record').innerText = b ? `最佳紀錄: ${b}` : "尚未有紀錄";
+            document.getElementById('best-record').innerText = b ? `紀錄: ${b}` : "無紀錄";
         }
 
         function updateSize(s) { gridSize = s; resetGame(); }
         function updateMode(m) { colorMode = m; resetGame(); }
-        function clearRecord() { if(confirm("確定要清除紀錄嗎？")) { records[gridSize]=null; localStorage.setItem('num_game_best', JSON.stringify(records)); updateBest(); } }
+        function clearRecord() { if(confirm("確定清除紀錄嗎？")) { records[gridSize]=null; localStorage.setItem('num_game_best', JSON.stringify(records)); updateBest(); } }
         function toggleModal(id, show) { document.getElementById(id).style.display = show ? 'flex' : 'none'; }
 
         function resetGame() {
@@ -174,7 +151,9 @@
             document.getElementById('m-single').className = (colorMode=='single' ? 'opt-btn active' : 'opt-btn');
             document.getElementById('m-multi').className = (colorMode=='multi' ? 'opt-btn active' : 'opt-btn');
 
-            let fontSize = (52 / gridSize).toFixed(1) + "vmin";
+            // 核心調整：讓 3x3 數字更大，5x5 也不會溢出
+            // 透過比例動態計算字體：3x3 約為可用空間的 14%，5x5 約為 8%
+            let fontSize = (58 / gridSize).toFixed(1) + "vmin";
 
             let nums = Array.from({length: gridSize * gridSize}, (_, i) => i + 1).sort(() => Math.random() - 0.5);
             nums.forEach(n => {
@@ -200,7 +179,7 @@
         function startGame() {
             resetGame();
             isGameRunning = true;
-            speak("遊戲開始");
+            speak("開始");
             startTime = Date.now();
             timerInterval = setInterval(() => {
                 document.getElementById('timer').innerText = Math.floor((Date.now() - startTime) / 10);
@@ -215,10 +194,8 @@
             if(!records[gridSize] || score < records[gridSize]) {
                 records[gridSize] = score;
                 localStorage.setItem('num_game_best', JSON.stringify(records));
-                speak("太棒了，你破紀錄了");
-            } else {
-                speak("完成");
-            }
+                speak("真棒，破紀錄了");
+            } else { speak("完成"); }
             updateBest();
         }
         resetGame();
