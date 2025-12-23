@@ -10,9 +10,9 @@
     <title>數字尋寶</title>
     <style>
         :root {
-            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            --btn-main: #2563eb; /* 稍微加深藍色以提高對比 */
-            --btn-correct: #475569; 
+            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%);
+            --btn-main: #1e40af; 
+            --btn-correct: #334155; 
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
         body, html { 
@@ -20,106 +20,143 @@
             display: flex; flex-direction: column; font-family: system-ui, -apple-system, sans-serif; 
             background: var(--bg-gradient); 
         }
+        
+        /* 頂部單一排佈局 */
         header { 
-            flex: 0 0 12%; display: flex; justify-content: space-between; align-items: center; 
-            padding: 0 5%; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+            flex: 0 0 auto; 
+            background: white; 
+            border-bottom: 2px solid #94a3b8;
+            padding: calc(10px + env(safe-area-inset-top)) 10px 10px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
         }
-        .title { font-size: 3.5vh; font-weight: 900; color: #1e293b; }
-        #timer { font-size: 5.5vh; font-weight: bold; color: #dc2626; font-family: 'Courier New', monospace; }
-        #best-record { font-size: 2vh; color: #475569; font-weight: bold; }
 
+        .title-section { flex: 0 0 auto; }
+        .title { font-size: 2vh; font-weight: 900; color: #0f172a; white-space: nowrap; }
+        #best-record { font-size: 1.5vh; color: #475569; font-weight: bold; }
+
+        .btn-section { 
+            flex: 1; 
+            display: flex; 
+            gap: 8px; 
+            justify-content: center;
+        }
+        .control-btn { 
+            height: 6vh; 
+            flex: 1;
+            max-width: 100px;
+            font-size: 2.2vh; 
+            border-radius: 12px; border: none; 
+            color: white; font-weight: bold; 
+            box-shadow: 0 3px 0px #000;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .timer-section { 
+            flex: 0 0 auto; 
+            text-align: right; 
+        }
+        #timer { font-size: 4vh; font-weight: bold; color: #be123c; font-family: monospace; line-height: 1; }
+
+        /* 遊戲盤面極大化 */
         #main-area { 
-            flex: 1; display: flex; justify-content: center; align-items: center; 
-            padding: 10px; 
+            flex: 1; 
+            display: flex; justify-content: center; align-items: center; 
+            padding: 10px; overflow: hidden;
         }
         #game-board { 
-            display: grid; gap: 12px; width: 100%; 
-            max-width: 95vw; max-height: 90%; 
+            display: grid; 
+            gap: 8px;
+            width: 100%; 
+            max-width: 600px;
+            max-height: 100%; 
+            margin: auto;
         }
+
         .number-btn { 
-            aspect-ratio: 1 / 1; border: none; border-radius: 16px; 
-            /* 預設字體大小，後續會由 JS 根據難度微調 */
-            font-size: 7vh; font-weight: 900; color: white; 
-            box-shadow: 0 6px 0 rgba(0,0,0,0.2); display: flex; 
-            justify-content: center; align-items: center; touch-action: none;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            aspect-ratio: 1 / 1; 
+            border: none; border-radius: 12px; 
+            font-weight: 900; color: white; 
+            box-shadow: 0 5px 0 rgba(0,0,0,0.3); 
+            display: flex; justify-content: center; align-items: center; 
+            touch-action: none;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.4);
         }
         .number-btn.correct { 
             background-color: var(--btn-correct) !important; 
-            transform: translateY(6px); box-shadow: none; opacity: 0.4; 
+            transform: translateY(5px); box-shadow: none; opacity: 0.2; 
         }
 
-        .controls { 
-            flex: 0 0 15%; display: flex; justify-content: center; align-items: center; 
-            gap: 20px; background: #e2e8f0; padding-bottom: env(safe-area-inset-bottom);
-        }
-        .control-btn { 
-            padding: 1.5vh 5vh; font-size: 3vh; border-radius: 50px; border: none; 
-            color: white; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; flex-direction: column; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 30px; border-radius: 24px; width: 90%; max-width: 450px; }
-        .setting-item { margin-bottom: 25px; text-align: center; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; flex-direction: column; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 20px; width: 90%; max-width: 400px; }
+        .setting-item { margin-bottom: 20px; text-align: center; }
         .setting-item p { font-size: 2.5vh; font-weight: bold; margin-bottom: 10px; }
-        .opt-btn { padding: 12px 20px; font-size: 2.2vh; margin: 5px; border: 2px solid #cbd5e1; border-radius: 12px; background: white; font-weight: bold; }
-        .opt-btn.active { background: #2563eb; color: white; border-color: #2563eb; }
+        .opt-btn { padding: 10px 20px; font-size: 2vh; margin: 4px; border: 2px solid #cbd5e1; border-radius: 10px; background: white; font-weight: bold; }
+        .opt-btn.active { background: #1e40af; color: white; border-color: #1e40af; }
     </style>
 </head>
 <body>
     <header>
-        <div class="title">數字尋寶</div>
-        <div style="text-align:right">
-            <div id="timer">0</div>
+        <div class="title-section">
+            <div class="title">數字尋寶</div>
             <div id="best-record">最佳: --</div>
         </div>
+        
+        <div class="btn-section">
+            <button class="control-btn" style="background:#047857" onclick="startGame()">開始</button>
+            <button class="control-btn" style="background:#334155" onclick="toggleModal('settings-modal', true)">設定</button>
+        </div>
+
+        <div class="timer-section">
+            <div id="timer">0</div>
+        </div>
     </header>
-    <div id="main-area"><div id="game-board"></div></div>
-    <div class="controls">
-        <button class="control-btn" style="background:#059669" onclick="startGame()">開始</button>
-        <button class="control-btn" style="background:#475569" onclick="toggleModal('settings-modal', true)">設定</button>
+
+    <div id="main-area">
+        <div id="game-board"></div>
     </div>
 
     <div id="settings-modal" class="modal">
         <div class="modal-content">
             <div class="setting-item">
                 <p>遊戲大小</p>
-                <button class="opt-btn" id="sz3" onclick="updateSize(3)">3x3 (簡單)</button>
-                <button class="opt-btn" id="sz4" onclick="updateSize(4)">4x4 (中等)</button>
-                <button class="opt-btn" id="sz5" onclick="updateSize(5)">5x5 (挑戰)</button>
+                <button class="opt-btn" id="sz3" onclick="updateSize(3)">3x3</button>
+                <button class="opt-btn" id="sz4" onclick="updateSize(4)">4x4</button>
+                <button class="opt-btn" id="sz5" onclick="updateSize(5)">5x5</button>
             </div>
             <div class="setting-item">
                 <p>顏色模式</p>
-                <button class="opt-btn" id="m1" onclick="updateMode('single')">單一藍色</button>
-                <button class="opt-btn" id="m2" onclick="updateMode('mix')">彩色混合</button>
+                <button class="opt-btn" id="m1" onclick="updateMode('single')">單色</button>
+                <button class="opt-btn" id="m2" onclick="updateMode('彩色')">彩色</button>
             </div>
-            <button class="control-btn" style="background:#dc2626; width:100%; margin-bottom:15px;" onclick="clearRecord()">清除紀錄</button>
-            <button class="control-btn" style="background:#2563eb; width:100%" onclick="toggleModal('settings-modal', false)">完成</button>
+            <button class="control-btn" style="background:#be123c; width:100%; max-width:none; height:6vh; font-size:2.5vh; margin-bottom:10px;" onclick="clearRecord()">清除紀錄</button>
+            <button class="control-btn" style="background:#1e40af; width:100%; max-width:none; height:6vh; font-size:2.5vh;" onclick="toggleModal('settings-modal', false)">完成</button>
         </div>
     </div>
 
     <script>
         let gridSize = 3, colorMode = 'single', nextNumber = 1, timerInterval = null, startTime = 0, isGameRunning = false;
-        // 使用更高飽和度的顏色方便辨識
-        const themeColors = ['#2563eb', '#059669', '#d97706', '#7c3aed', '#db2777', '#0891b2'];
+        const themeColors = ['#1e40af', '#047857', '#b45309', '#6d28d9', '#be123c', '#0369a1'];
         const board = document.getElementById('game-board');
         let records = JSON.parse(localStorage.getItem('num_game_best')) || {3:null, 4:null, 5:null};
 
         function speak(text) {
             const msg = new SpeechSynthesisUtterance(text);
             msg.lang = 'zh-TW';
-            msg.rate = 1.0; // 稍微放慢語速
+            msg.rate = 0.9;
             window.speechSynthesis.speak(msg);
         }
 
         function updateBest() {
             const b = records[gridSize];
-            document.getElementById('best-record').innerText = b ? `最佳紀錄: ${b}` : "最佳: --";
+            document.getElementById('best-record').innerText = b ? `最佳: ${b}` : "最佳: --";
         }
 
         function updateSize(s) { gridSize = s; resetGame(); }
         function updateMode(m) { colorMode = m; resetGame(); }
-        function clearRecord() { if(confirm("確定要清除這個大小的最佳紀錄嗎？")) { records[gridSize]=null; localStorage.setItem('num_game_best', JSON.stringify(records)); updateBest(); } }
+        function clearRecord() { if(confirm("確定清除紀錄？")) { records[gridSize]=null; localStorage.setItem('num_game_best', JSON.stringify(records)); updateBest(); } }
         function toggleModal(id, show) { document.getElementById(id).style.display = show ? 'flex' : 'none'; }
 
         function resetGame() {
@@ -129,15 +166,13 @@
             board.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
             updateBest();
             
-            [3,4,5].forEach(i => document.getElementById('sz'+i).className = (gridSize==i?'opt-btn active':'opt-btn'));
-            document.getElementById('m1').className = (colorMode=='single'?'opt-btn active':'opt-btn');
-            document.getElementById('m2').className = (colorMode=='mix'?'opt-btn active':'opt-btn');
+            [3,4,5].forEach(i => {
+                const el = document.getElementById('sz'+i);
+                if(el) el.className = (gridSize==i?'opt-btn active':'opt-btn');
+            });
 
-            // 根據格子數量動態調整字體大小，確保 5x5 時不會擠在一起
-            let fontSize;
-            if (gridSize === 3) fontSize = '8vh';
-            else if (gridSize === 4) fontSize = '6.5vh';
-            else fontSize = '5vh';
+            // 根據可用空間極大化字體
+            let fontSize = (52 / gridSize).toFixed(1) + "vmin";
 
             let nums = Array.from({length: gridSize * gridSize}, (_, i) => i + 1).sort(() => Math.random() - 0.5);
             nums.forEach(n => {
@@ -145,7 +180,7 @@
                 btn.className = 'number-btn';
                 btn.innerText = n;
                 btn.style.fontSize = fontSize; 
-                btn.style.backgroundColor = (colorMode=='mix') ? themeColors[n % themeColors.length] : '#2563eb';
+                btn.style.backgroundColor = (colorMode=='彩色') ? themeColors[n % themeColors.length] : '#1e40af';
                 btn.addEventListener('pointerdown', (e) => { e.preventDefault(); handlePress(btn, n); });
                 board.appendChild(btn);
             });
@@ -163,7 +198,7 @@
         function startGame() {
             resetGame();
             isGameRunning = true;
-            speak("遊戲開始");
+            speak("開始");
             startTime = Date.now();
             timerInterval = setInterval(() => {
                 document.getElementById('timer').innerText = Math.floor((Date.now() - startTime) / 10);
@@ -180,7 +215,7 @@
                 localStorage.setItem('num_game_best', JSON.stringify(records));
                 speak("太棒了，你破紀錄了");
             } else {
-                speak("恭喜,你完成了");
+                speak("挑戰完成");
             }
             updateBest();
         }
